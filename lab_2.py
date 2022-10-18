@@ -61,32 +61,32 @@ def stochastic_gradient_descent(num_iters, learning_rate, input_data, expected_o
     X = get_biased_matrix(input_data)
     X_t = np.transpose(X)
 
-    # Shuffle arrays to change the order
-    shuffler = np.random.permutation(X.shape[0])
-    X_shuffled = X[shuffler]
-    Y_shuffled = expected_output[shuffler]
-
     # Perform SGD
     for _ in range(num_iters):
-        for i in range(X.shape[0]):
-            mse = np.dot((2 * X_t), (np.dot(X_shuffled[i], w_est).T - Y_shuffled[i]))
-            for row in mse.T:
-                w_est = w_est - learning_rate * row
-
+        rand_index = np.random.randint(0, X.shape[0])
+        X_W = np.dot(X[rand_index, :], w_est)
+        mse = np.dot(2 * X_t[:, rand_index], X_W - expected_output[rand_index])
+        w_est = w_est - learning_rate * mse        
 
     print(f"Stochastic Gradient Descent: {w_est}")
 
 
-# transposed_matrix = np.transpose(biased_matrix)
+def mini_batch_gradient_descent(num_iters, batch_size, learning_rate, input_data, expected_output):
+    w_est = get_biased_starting_weights_matrix()
+    X = get_biased_matrix(input_data)
+    X_t = np.transpose(X)
 
-# for epoch in range(num_of_iterations):
-#     shuffler = np.random.permutation(biased_matrix.shape[0])
+    # Perform MBGD
+    for _ in range(num_iters):
+        mse = 0
+        for _ in range(batch_size):
+            rand_index = np.random.randint(0, X.shape[0])
+            X_W = np.dot(X[rand_index, :], w_est)
+            mse += np.dot(2 * X_t[:, rand_index], X_W - expected_output[rand_index])
+        w_est = w_est - learning_rate * mse
 
-#     temp_x = biased_matrix[shuffler]
-#     temp_y = y[shuffler]
-#     for i in range(num_of_samples):
-#         mse = np.dot((2 * transposed_matrix), (np.dot(temp_x[i], w_est) - temp_y[i]))
-#         w_est = w_est - learning_rate * mse
+    print(f"Mini-Batch Gradient Descent: {w_est}")
+
 
 
 if __name__ == "__main__":
@@ -100,5 +100,5 @@ if __name__ == "__main__":
 
     linear_regression(input_data=x, expected_output=y)
     batch_gradient_descent(num_iters=1000, learning_rate=0.0001, input_data=x, expected_output=y)
-    stochastic_gradient_descent(num_iters=1000, learning_rate=0.0001, input_data=x, expected_output=y)
-    # mini_batch_gradient_descent()
+    stochastic_gradient_descent(num_iters=100000, learning_rate=0.001, input_data=x, expected_output=y)
+    mini_batch_gradient_descent(num_iters=10000, batch_size=32, learning_rate=0.001, input_data=x, expected_output=y)
