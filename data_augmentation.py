@@ -1,10 +1,13 @@
 import os
+import shutil
 
 import tensorflow as tf
 from tensorflow import keras
 from PIL import Image, ImageOps
 import glob
 import numpy as np
+
+AUGMENTED_DATA_DIR = "cnn_data_augmented"
 
 DIRECTORY_LIST = [
     "circle",
@@ -50,12 +53,18 @@ def group_images() -> dict:
 def save_augmented_images(augmented_images_dict, augmentation_type):
     for key, value in augmented_images_dict.items():
         for idx, image in enumerate(value):
-            print(image)
-            print(type(image))
-            print(image.shape)
             image_to_save = Image.fromarray(image.astype(np.uint8))
             image_to_save = ImageOps.grayscale(image_to_save)
-            image_to_save.save(f"cnn_data_augmented/{key}/{augmentation_type}_{key}_{idx}.png")
+            image_to_save.save(f"{AUGMENTED_DATA_DIR}/{key}/{augmentation_type}_{key}_{idx}.png")
+
+
+def create_dirs_for_augmented_data():
+    if os.path.isdir(AUGMENTED_DATA_DIR):
+        shutil.rmtree(AUGMENTED_DATA_DIR)
+    os.mkdir(AUGMENTED_DATA_DIR)
+
+    for dirpath in DIRECTORY_LIST:
+        os.mkdir(f"{AUGMENTED_DATA_DIR}/{dirpath}")
 
 
 def image_augmentation(num_of_new_images=1000, augmentation_type="rotation"):
@@ -85,5 +94,12 @@ def image_augmentation(num_of_new_images=1000, augmentation_type="rotation"):
 
 
 if __name__ == "__main__":
-    augmented_images = image_augmentation(augmentation_type="gauss")
-    save_augmented_images(augmented_images, augmentation_type="gauss")
+    create_dirs_for_augmented_data()
+
+    gauss_images = image_augmentation(augmentation_type="gauss")
+    rotated_images = image_augmentation(augmentation_type="rotation")
+    flipped_images = image_augmentation(augmentation_type="flip")
+
+    save_augmented_images(gauss_images, augmentation_type="gauss")
+    save_augmented_images(rotated_images, augmentation_type="rotation")
+    save_augmented_images(flipped_images, augmentation_type="flip")
